@@ -1,4 +1,5 @@
-from hanzi_char_featurizer import featurize
+from hanzi_char_featurizer import Featurizor
 
-result = featurize('明天')
+featurizor = Featurizor()
+result = featurizor.featurize('明天')
 print(result)

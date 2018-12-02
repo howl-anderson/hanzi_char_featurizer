@@ -9,14 +9,43 @@
 
 ## 使用
 ```python
-from hanzi_char_featurizer import featurize
+from hanzi_char_featurizer import Featurizor
 
-result = featurize('明天')
+featurizor = Featurizor()
+result = featurizor.featurize('明天')
 print(result)
 ```
 
 输出
 ```text
-[('míng', '67020', ['日', '月']), ('tiān', '10804', ['一', '大'])]
+([['m'], ['t']], [['ing'], ['ian']], [['2'], ['1']], ('6', '1'), ('7', '0'), ('0', '8'), ('2', '0'), ('0', '4'))
 ```
 
+## 结构解析
+![](image/structure.jpg)
+
+## 输出到 TensorFlow 作为 Tensor
+```python
+import tensorflow as tf
+
+import hanzi_char_featurizer
+
+feature = hanzi_char_featurizer.featurize_as_tensor('./usage/data.txt')
+
+with tf.Session() as sess:
+    sess.run(tf.initializers.tables_initializer())
+    for _ in range(1):
+        print('+' * 20)
+        data = sess.run(feature)
+        print(data)
+```
+
+输出
+```text
+++++++++++++++++++++
+[[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0. 0.
+  1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0.
+  0. 0. 0. 0. 0. 0. 1. 0. 0. 0.]]
+```

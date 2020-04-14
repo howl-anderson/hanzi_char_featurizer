@@ -1,0 +1,6 @@
+bumpversion
+twine
+wheel
+black
+flake8
+pytype

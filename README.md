@@ -55,5 +55,5 @@ with tf.Session() as sess:
 
 ## 在使用 hanzi_char_featurizer 的公司列表
 
-<a here="https://www.huya.com/"><img src="image/huya_tv.png" align="left", height="48"></a>
+<a here="https://www.huya.com/"><img src="image/huya_tv.png" align="left" height="48"></a>
 

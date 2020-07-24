@@ -52,3 +52,8 @@ with tf.Session() as sess:
 
 ## TODO
 * 增加 Unicode 的 IDS 表征，来自 爱奇艺 FASPell 模型
+
+## 在使用 hanzi_char_featurizer 的公司列表
+
+<a here="https://www.huya.com/"><img src="image/huya_tv.png" align="left", height="48"></a>
+

@@ -93,10 +93,6 @@ featurizer = Featurizer(featurizers=[FourCorner()])
 result = featurizer.extract('明天')
 ```
 
-## Structure / 结构解析
-
-![](image/structure.jpg)
-
 ## Companies Using This / 在使用的公司
 
 <img src="image/huya_tv.png" align="left" height="48">

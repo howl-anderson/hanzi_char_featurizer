@@ -1,92 +1,73 @@
-import functools
+from __future__ import annotations
 
-import tensorflow as tf
+from functools import cached_property
+from typing import Any, Protocol
+
+from numpy.typing import NDArray
 
 from hanzi_char_featurizer.featurizers.four_corner import FourCorner
 from hanzi_char_featurizer.featurizers.pinyin_parts import PinYinParts
 
 
-class Featurizor(object):
-    def __init__(self, featurizers=None):
-        self.featurizers = featurizers if featurizers else [PinYinParts(), FourCorner()]
+class FeaturizerProtocol(Protocol):
+    """特征器协议"""
 
-    def featurize(self, char_seq):
-        featurize_result = []
-        for featurizer in self.featurizers:
-            featurize_result.extend(featurizer.extract(char_seq))
+    def extract(self, char_seq: str, as_numpy: bool = False) -> dict[str, Any]: ...
 
-        return tuple(featurize_result)
-
-    def get_vocabulary(self):
-        featurize_vocabulary = []
-        for featurizer in self.featurizers:
-            featurize_vocabulary.extend(featurizer.get_vocabulary())
-
-        return featurize_vocabulary
-
-    def get_data_type(self):
-        featurize_vocabulary = []
-        for featurizer in self.featurizers:
-            data_type = featurizer.get_data_type()
-            featurize_vocabulary.extend(data_type)
-
-        return tuple(featurize_vocabulary)
-
-    def get_data_shape(self):
-        featurize_vocabulary = []
-        for featurizer in self.featurizers:
-            data_shape = featurizer.get_data_shape()
-            featurize_vocabulary.extend(data_shape)
-
-        return tuple(featurize_vocabulary)
+    @property
+    def vocabulary(self) -> dict[str, Any]: ...
 
 
-def featurize_as_tensor(data_file, featurizers=None):
-    obj = Featurizor(featurizers)
+class Featurizer:
+    """汉字特征提取器主类"""
 
-    def gen(data_file):
-        with open(data_file, 'rt') as fd:
-            for line in fd:
-                res = obj.featurize(line.strip())
-                yield res
+    # 默认特征器名称映射
+    DEFAULT_FEATURIZER_NAMES: dict[str, str] = {
+        "PinYinParts": "pinyin",
+        "FourCorner": "four_corner",
+    }
 
-    data_type = obj.get_data_type()
-    data_shape = obj.get_data_shape()
-
-    dataset = tf.data.Dataset.from_generator(
-        functools.partial(gen, data_file=data_file),
-        data_type,
-        data_shape
-    )
-
-    featurize_result = dataset.make_one_shot_iterator().get_next()
-
-    featurize_vocab = obj.get_vocabulary()
-
-    def build_feature_column(key_, vocabulary_list):
-        return tf.feature_column.indicator_column(
-            tf.feature_column.categorical_column_with_vocabulary_list(
-                key=key_,
-                vocabulary_list=vocabulary_list)
+    def __init__(self, featurizers: list[FeaturizerProtocol] | None = None) -> None:
+        self.featurizers: list[FeaturizerProtocol] = (
+            featurizers if featurizers else [PinYinParts(), FourCorner()]
         )
 
-    feature_keys = ['feature_{}'.format(i) for i in range(len(featurize_result))]
-    feature_columns = list(
-        map(
-            lambda x: build_feature_column(
-                feature_keys[x],
-                featurize_vocab[x]
-            ),
-            range(len(featurize_result))
-        )
-    )
+    def _get_featurizer_name(self, featurizer: FeaturizerProtocol) -> str:
+        """获取特征器的名称"""
+        class_name = featurizer.__class__.__name__
+        return self.DEFAULT_FEATURIZER_NAMES.get(class_name, class_name.lower())
 
-    data = {feature_keys[i]: featurize_result[i] for i in range(len(featurize_result))}
+    def extract(
+        self, char_seq: str, as_numpy: bool = False
+    ) -> dict[str, dict[str, Any]] | dict[str, dict[str, NDArray[Any]]]:
+        """提取特征
 
-    feature = tf.feature_column.input_layer(data, feature_columns)
+        Args:
+            char_seq: 待提取特征的字符序列
+            as_numpy: 是否返回 NumPy 数组格式
 
-    return feature
+        Returns:
+            嵌套字典，键为特征器名称
+        """
+        result: dict[str, dict[str, Any]] = {}
+        for featurizer in self.featurizers:
+            name = self._get_featurizer_name(featurizer)
+            result[name] = featurizer.extract(char_seq, as_numpy=as_numpy)
+        return result
+
+    @cached_property
+    def vocabulary(self) -> dict[str, dict[str, Any]]:
+        """词汇表"""
+        result: dict[str, dict[str, Any]] = {}
+        for featurizer in self.featurizers:
+            name = self._get_featurizer_name(featurizer)
+            result[name] = featurizer.vocabulary
+        return result
 
 
 if __name__ == "__main__":
-    pass
+    featurizer = Featurizer()
+
+    print("extract():", featurizer.extract("明天"))
+    print("extract(as_numpy=True):", featurizer.extract("明天", as_numpy=True))
+    print("vocabulary:", featurizer.vocabulary)

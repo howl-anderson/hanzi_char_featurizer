@@ -1,5 +1,14 @@
-from hanzi_char_featurizer import Featurizor
+from hanzi_char_featurizer import Featurizer
 
-featurizor = Featurizor()
-result = featurizor.featurize('明天')
+featurizer = Featurizer()
+
+print("=== extract() ===")
+result = featurizer.extract("明天")
 print(result)
+
+print("\n=== extract(as_numpy=True) ===")
+result = featurizer.extract("明天", as_numpy=True)
+print(result)
+
+print("\n=== vocabulary ===")
+print(featurizer.vocabulary)

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hanzi_char_featurizer"
+version = "1.0.0"
+description = "A framework for extracting Chinese character features for deep learning"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Xiaoquan Kong", email = "u1mail2me@gmail.com" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "pypinyin",
+    "four_corner_method",
+    "hanzi_chaizi",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+]
+
+[project.urls]
+Homepage = "https://github.com/howl-anderson/hanzi_char_featurizer"
+Repository = "https://github.com/howl-anderson/hanzi_char_featurizer"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hanzi_char_featurizer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
